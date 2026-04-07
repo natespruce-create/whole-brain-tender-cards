@@ -43,7 +43,7 @@ def extract_text(file):
         return "\n".join([para.text for para in doc.paragraphs])
     return ""
 
-# ====================== PDF GENERATION FUNCTION (Unicode Fixed) ======================
+# ====================== PDF GENERATION FUNCTION (Fixed) ======================
 def create_whole_brain_pdf(questions):
     class PDF(FPDF):
         def header(self):
@@ -84,15 +84,15 @@ def create_whole_brain_pdf(questions):
         pdf.set_font("Helvetica", "", 11)
         
         for i, question in enumerate(questions.get(q, []), 1):
-            # Clean any problematic characters
-            clean_question = question.replace("–", "-").replace("—", "-")
+            clean_question = question.replace("–", "-").replace("—", "-").replace("’", "'")
             pdf.multi_cell(0, 8, f"{i}. {clean_question}")
             pdf.ln(5)
         
         if q != "D":
             pdf.add_page()
 
-    return pdf.output(dest="S").encode("latin-1")
+    # Return bytes directly (no .encode())
+    return pdf.output(dest="S")
 
 # ====================== MAIN LOGIC ======================
 if uploaded_file:
@@ -180,7 +180,7 @@ Quadrants:
 # ====================== PDF DOWNLOAD ======================
 if "questions" in st.session_state:
     st.markdown("---")
-    if st.button("📄 Download PDF", type="primary", use_container_width=True):
+    if st.button("📄 Download Pretty PDF (One Quadrant Per Page)", type="primary", use_container_width=True):
         with st.spinner("Creating beautiful PDF..."):
             try:
                 pdf_bytes = create_whole_brain_pdf(st.session_state.questions)
@@ -191,7 +191,7 @@ if "questions" in st.session_state:
                     mime="application/pdf",
                     key="pdf_download"
                 )
-            except Exception as e:
-                st.error(f"PDF creation failed: {str(e)}")
+            except Exception as pdf_error:
+                st.error(f"PDF creation failed: {str(pdf_error)}")
 
-st.caption("Whole-Brain Tender Tool • Value Shift")
+st.caption("Whole-Brain Tender Tool • One quadrant per page in PDF")
