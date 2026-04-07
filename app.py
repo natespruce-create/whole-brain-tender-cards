@@ -43,7 +43,7 @@ def extract_text(file):
         return "\n".join([para.text for para in doc.paragraphs])
     return ""
 
-# ====================== PDF GENERATION FUNCTION ======================
+# ====================== PDF GENERATION FUNCTION (Improved Layout) ======================
 def create_whole_brain_pdf(questions):
     class PDF(FPDF):
         def header(self):
@@ -58,7 +58,12 @@ def create_whole_brain_pdf(questions):
             self.set_fill_color(*rgb)
             self.set_text_color(255, 255, 255)
             self.cell(0, 12, title, ln=1, align="C", fill=True)
-            self.ln(8)
+            self.ln(10)
+
+        def check_and_new_page(self, lines_needed=3):
+            """Check if we need to start a new page"""
+            if self.get_y() > self.h - 30:   # 30mm margin from bottom
+                self.add_page()
 
     pdf = PDF()
     pdf.add_page()
@@ -85,9 +90,15 @@ def create_whole_brain_pdf(questions):
         
         for i, question in enumerate(questions.get(q, []), 1):
             clean_question = question.replace("–", "-").replace("—", "-").replace("’", "'")
+            
+            # Check if we need a new page before printing this question
+            pdf.check_and_new_page()
+            
+            # Print the question number and text
             pdf.multi_cell(0, 8, f"{i}. {clean_question}")
-            pdf.ln(5)
-        
+            pdf.ln(8)   # Extra space after each question
+
+        # Add a new page for the next quadrant (except after the last one)
         if q != "D":
             pdf.add_page()
 
