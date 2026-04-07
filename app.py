@@ -80,7 +80,7 @@ Quadrants:
 - C (Red): People, stakeholders, culture, team
 - D (Yellow): Innovation, big picture, future, creative"""
 
-            try:
+                        try:
                 if selected_model == "grok":
                     from openai import OpenAI
                     client = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
@@ -101,6 +101,10 @@ Quadrants:
                     )
                     result = json.loads(response.text)
 
+                # Store the result so it survives page reruns
+                st.session_state.questions = result
+                st.session_state.tender_text = tender_text[:500]  # short summary
+
                 # ====================== DISPLAY QUESTIONS ======================
                 st.markdown("### 🎯 Your Whole-Brain Tender Questions")
                 col1, col2 = st.columns(2)
@@ -119,60 +123,18 @@ Quadrants:
                         for i, question in enumerate(result.get(q, []), 1):
                             st.markdown(f"{i}. {question}")
 
-                # ====================== DOWNLOAD PRETTY PDF ======================
-                if st.button("📄 Download Pretty PDF (One Quadrant Per Page)", type="primary", use_container_width=True):
-                    with st.spinner("Creating beautiful PDF..."):
-                        pdf_bytes = create_whole_brain_pdf(result)
-                        st.download_button(
-                            label="⬇️ Click here to download the PDF",
-                            data=pdf_bytes,
-                            file_name=f"Whole_Brain_Tender_Questions_{datetime.now().strftime('%Y-%m-%d')}.pdf",
-                            mime="application/pdf"
-                        )
-
             except Exception as e:
-                st.error(f"Error: {str(e)}")
+                st.error(f"Error generating questions: {str(e)}")
 
-# ====================== PDF FUNCTION (must be at the bottom, no extra indent) ======================
-def create_whole_brain_pdf(questions):
-    class PDF(FPDF):
-        def header(self):
-            self.set_font("Arial", "B", 16)
-            self.cell(0, 10, "Whole-Brain Tender Approach", ln=1, align="C")
-            self.set_font("Arial", "", 10)
-            self.cell(0, 6, f"Generated on {datetime.now().strftime('%d %B %Y')}", ln=1, align="C")
-            self.ln(10)
-
-        def quadrant_title(self, title, rgb):
-            self.set_font("Arial", "B", 14)
-            self.set_fill_color(*rgb)
-            self.set_text_color(255, 255, 255)
-            self.cell(0, 12, title, ln=1, align="C", fill=True)
-            self.ln(8)
-
-    pdf = PDF()
-    pdf.add_page()
-
-    colors = {"A": (0, 102, 204), "B": (0, 153, 0), "C": (204, 0, 0), "D": (204, 153, 0)}
-    quadrant_names = {
-        "A": "Quadrant A – Analytical (Blue)",
-        "B": "Quadrant B – Practical (Green)",
-        "C": "Quadrant C – Relational (Red)",
-        "D": "Quadrant D – Conceptual (Yellow)"
-    }
-
-    for q in ["A", "B", "C", "D"]:
-        pdf.quadrant_title(quadrant_names[q], colors[q])
-        pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", "", 11)
-        
-        for i, question in enumerate(questions.get(q, []), 1):
-            pdf.multi_cell(0, 8, f"{i}. {question}")
-            pdf.ln(4)
-        
-        if q != "D":          # Don't add extra page after the last quadrant
-            pdf.add_page()
-
-    return pdf.output(dest="S").encode("latin-1")
-
-st.caption("Whole-Brain Tender Tool | One quadrant per page in PDF")
+# ====================== PDF DOWNLOAD (OUTSIDE the generate block) ======================
+if "questions" in st.session_state:
+    if st.button("📄 Download PDF", type="primary", use_container_width=True):
+        with st.spinner("Creating beautiful PDF..."):
+            pdf_bytes = create_whole_brain_pdf(st.session_state.questions)
+            st.download_button(
+                label="⬇️ Click here to download the PDF",
+                data=pdf_bytes,
+                file_name=f"Whole_Brain_Tender_Questions_{datetime.now().strftime('%Y-%m-%d')}.pdf",
+                mime="application/pdf",
+                key="pdf_download"   # important to avoid conflicts
+            )
