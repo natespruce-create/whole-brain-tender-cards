@@ -43,7 +43,7 @@ def extract_text(file):
         return "\n".join([para.text for para in doc.paragraphs])
     return ""
 
-# ====================== PDF GENERATION FUNCTION (Improved Layout) ======================
+# ====================== PDF GENERATION FUNCTION (Tighter Layout) ======================
 def create_whole_brain_pdf(questions):
     class PDF(FPDF):
         def header(self):
@@ -51,21 +51,21 @@ def create_whole_brain_pdf(questions):
             self.cell(0, 10, "Whole-Brain Tender Approach", ln=1, align="C")
             self.set_font("Helvetica", "", 10)
             self.cell(0, 6, f"Generated on {datetime.now().strftime('%d %B %Y')}", ln=1, align="C")
-            self.ln(15)
+            self.ln(12)
 
         def quadrant_title(self, title, rgb):
             self.set_font("Helvetica", "B", 14)
             self.set_fill_color(*rgb)
             self.set_text_color(255, 255, 255)
             self.cell(0, 12, title, ln=1, align="C", fill=True)
-            self.ln(10)
+            self.ln(8)
 
         def check_and_new_page(self, lines_needed=3):
-            """Check if we need to start a new page"""
-            if self.get_y() > self.h - 30:   # 30mm margin from bottom
+            if self.get_y() > self.h - 35:   # Leave margin at bottom
                 self.add_page()
 
     pdf = PDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
     colors = {
@@ -86,19 +86,17 @@ def create_whole_brain_pdf(questions):
         pdf.quadrant_title(quadrant_names[q], colors[q])
         
         pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Helvetica", "", 11)
+        pdf.set_font("Helvetica", "", 10)   # ← Smaller font size
         
         for i, question in enumerate(questions.get(q, []), 1):
             clean_question = question.replace("–", "-").replace("—", "-").replace("’", "'")
             
-            # Check if we need a new page before printing this question
             pdf.check_and_new_page()
             
-            # Print the question number and text
-            pdf.multi_cell(0, 8, f"{i}. {clean_question}")
-            pdf.ln(8)   # Extra space after each question
+            pdf.multi_cell(0, 7, f"{i}. {clean_question}")   # Tighter line height
+            pdf.ln(6)   # Space after each question
 
-        # Add a new page for the next quadrant (except after the last one)
+        # New page for next quadrant (except the last one)
         if q != "D":
             pdf.add_page()
 
