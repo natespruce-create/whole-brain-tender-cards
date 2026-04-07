@@ -133,4 +133,62 @@ Quadrants:
 
             try:
                 if selected_model == "grok":
-                    from openai
+                    from openai import OpenAI
+                    client = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
+                    response = client.chat.completions.create(
+                        model="grok-4-1-fast-reasoning",
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.3,
+                        response_format={"type": "json_object"}
+                    )
+                    result = json.loads(response.choices[0].message.content)
+                else:  # gemini
+                    import google.generativeai as genai
+                    genai.configure(api_key=api_key)
+                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    response = model.generate_content(
+                        prompt,
+                        generation_config={"response_mime_type": "application/json", "temperature": 0.3}
+                    )
+                    result = json.loads(response.text)
+
+                # Save result so it survives page refresh
+                st.session_state.questions = result
+
+                # Display questions
+                st.markdown("### 🎯 Your Whole-Brain Tender Questions")
+
+                col1, col2 = st.columns(2)
+                col3, col4 = st.columns(2)
+
+                quadrants = {
+                    "A": ("🔵 Quadrant A – Analytical (Blue)", col1),
+                    "B": ("🟢 Quadrant B – Practical (Green)", col2),
+                    "C": ("🔴 Quadrant C – Relational (Red)", col3),
+                    "D": ("🟡 Quadrant D – Conceptual (Yellow)", col4),
+                }
+
+                for q, (title, col) in quadrants.items():
+                    with col:
+                        st.markdown(f"**{title}**")
+                        for i, question in enumerate(result.get(q, []), 1):
+                            st.markdown(f"{i}. {question}")
+
+            except Exception as e:
+                st.error(f"Error generating questions: {str(e)}")
+
+# ====================== PDF DOWNLOAD (Always visible after questions generated) ======================
+if "questions" in st.session_state:
+    st.markdown("---")
+    if st.button("📄 Download Pretty PDF (One Quadrant Per Page)", type="primary", use_container_width=True):
+        with st.spinner("Creating beautiful PDF..."):
+            pdf_bytes = create_whole_brain_pdf(st.session_state.questions)
+            st.download_button(
+                label="⬇️ Click here to download the PDF",
+                data=pdf_bytes,
+                file_name=f"Whole_Brain_Tender_Questions_{datetime.now().strftime('%Y-%m-%d')}.pdf",
+                mime="application/pdf",
+                key="pdf_download"
+            )
+
+st.caption("Whole-Brain Tender Tool • One quadrant per page in PDF")
