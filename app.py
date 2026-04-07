@@ -43,18 +43,18 @@ def extract_text(file):
         return "\n".join([para.text for para in doc.paragraphs])
     return ""
 
-# ====================== PDF GENERATION FUNCTION ======================
+# ====================== PDF GENERATION FUNCTION (Unicode Fixed) ======================
 def create_whole_brain_pdf(questions):
     class PDF(FPDF):
         def header(self):
-            self.set_font("Arial", "B", 16)
+            self.set_font("Helvetica", "B", 16)
             self.cell(0, 10, "Whole-Brain Tender Approach", ln=1, align="C")
-            self.set_font("Arial", "", 10)
+            self.set_font("Helvetica", "", 10)
             self.cell(0, 6, f"Generated on {datetime.now().strftime('%d %B %Y')}", ln=1, align="C")
             self.ln(15)
 
         def quadrant_title(self, title, rgb):
-            self.set_font("Arial", "B", 14)
+            self.set_font("Helvetica", "B", 14)
             self.set_fill_color(*rgb)
             self.set_text_color(255, 255, 255)
             self.cell(0, 12, title, ln=1, align="C", fill=True)
@@ -71,20 +71,22 @@ def create_whole_brain_pdf(questions):
     }
 
     quadrant_names = {
-        "A": "Quadrant A – Analytical (Blue)",
-        "B": "Quadrant B – Practical (Green)",
-        "C": "Quadrant C – Relational (Red)",
-        "D": "Quadrant D – Conceptual (Yellow)"
+        "A": "Quadrant A - Analytical (Blue)",
+        "B": "Quadrant B - Practical (Green)",
+        "C": "Quadrant C - Relational (Red)",
+        "D": "Quadrant D - Conceptual (Yellow)"
     }
 
     for q in ["A", "B", "C", "D"]:
         pdf.quadrant_title(quadrant_names[q], colors[q])
         
         pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", "", 11)
+        pdf.set_font("Helvetica", "", 11)
         
         for i, question in enumerate(questions.get(q, []), 1):
-            pdf.multi_cell(0, 8, f"{i}. {question}")
+            # Clean any problematic characters
+            clean_question = question.replace("–", "-").replace("—", "-")
+            pdf.multi_cell(0, 8, f"{i}. {clean_question}")
             pdf.ln(5)
         
         if q != "D":
@@ -152,10 +154,8 @@ Quadrants:
                     )
                     result = json.loads(response.text)
 
-                # Save result so it survives page refresh
                 st.session_state.questions = result
 
-                # Display questions
                 st.markdown("### 🎯 Your Whole-Brain Tender Questions")
 
                 col1, col2 = st.columns(2)
@@ -177,18 +177,21 @@ Quadrants:
             except Exception as e:
                 st.error(f"Error generating questions: {str(e)}")
 
-# ====================== PDF DOWNLOAD (Always visible after questions generated) ======================
+# ====================== PDF DOWNLOAD ======================
 if "questions" in st.session_state:
     st.markdown("---")
-    if st.button("📄 Download Pretty PDF (One Quadrant Per Page)", type="primary", use_container_width=True):
+    if st.button("📄 Download PDF", type="primary", use_container_width=True):
         with st.spinner("Creating beautiful PDF..."):
-            pdf_bytes = create_whole_brain_pdf(st.session_state.questions)
-            st.download_button(
-                label="⬇️ Click here to download the PDF",
-                data=pdf_bytes,
-                file_name=f"Whole_Brain_Tender_Questions_{datetime.now().strftime('%Y-%m-%d')}.pdf",
-                mime="application/pdf",
-                key="pdf_download"
-            )
+            try:
+                pdf_bytes = create_whole_brain_pdf(st.session_state.questions)
+                st.download_button(
+                    label="⬇️ Click here to download the PDF",
+                    data=pdf_bytes,
+                    file_name=f"Whole_Brain_Tender_Questions_{datetime.now().strftime('%Y-%m-%d')}.pdf",
+                    mime="application/pdf",
+                    key="pdf_download"
+                )
+            except Exception as e:
+                st.error(f"PDF creation failed: {str(e)}")
 
-st.caption("Whole-Brain Tender Tool • One quadrant per page in PDF")
+st.caption("Whole-Brain Tender Tool • Value Shift")
