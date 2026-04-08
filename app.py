@@ -49,12 +49,18 @@ def extract_text(file):
         return "\n".join([para.text for para in doc.paragraphs])
     return ""
 
-# ====================== PDF GENERATION FUNCTION (Tighter Layout) ======================
+# ====================== PDF GENERATION FUNCTION (Tighter Layout + Logo) ======================
 def create_whole_brain_pdf(questions):
     class PDF(FPDF):
         def header(self):
+            # Add logo on every page
+            if hasattr(self, 'logo_path') and self.logo_path:
+                self.image(self.logo_path, x=10, y=8, w=45)  # ← Adjust size/position here
+            
+            # Title centered
             self.set_font("Helvetica", "B", 16)
             self.cell(0, 10, "Whole-Brain Tender Approach", ln=1, align="C")
+            
             self.set_font("Helvetica", "", 10)
             self.cell(0, 6, f"Generated on {datetime.now().strftime('%d %B %Y')}", ln=1, align="C")
             self.ln(12)
@@ -71,7 +77,8 @@ def create_whole_brain_pdf(questions):
                 self.add_page()
 
     pdf = PDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.logo_path = "VS logo 2.png"           # Make sure your logo is named exactly this
+    pdf.set_auto_page_break(auto=True, margin=20)
     pdf.add_page()
 
     colors = {
@@ -92,17 +99,17 @@ def create_whole_brain_pdf(questions):
         pdf.quadrant_title(quadrant_names[q], colors[q])
         
         pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Helvetica", "", 10)   # ← Smaller font size
+        pdf.set_font("Helvetica", "", 10)   # Smaller font for fitting 10 questions
         
         for i, question in enumerate(questions.get(q, []), 1):
             clean_question = question.replace("–", "-").replace("—", "-").replace("’", "'")
             
             pdf.check_and_new_page()
             
-            pdf.multi_cell(0, 7, f"{i}. {clean_question}")   # Tighter line height
-            pdf.ln(6)   # Space after each question
+            pdf.multi_cell(0, 7, f"{i}. {clean_question}")
+            pdf.ln(6)
 
-        # New page for next quadrant (except the last one)
+        # New page for next quadrant (except after the last one)
         if q != "D":
             pdf.add_page()
 
