@@ -15,6 +15,7 @@ with col1:
 
 with col2:
     st.title("Whole-Brain Tender Analyser")
+    st.markdown("This tool is designed to be used in conjunction with your HBDI profile to help you get the most out of whole brain thinking when writing a tender by leaning into your non dominant areas")
     st.markdown("Instructions: Upload a tender/RFP - Click the big red button.")   
 # ====================== MODEL SELECTOR ======================
 model_options = {
