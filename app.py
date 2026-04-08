@@ -15,8 +15,7 @@ with col1:
 
 with col2:
     st.title("🧠 Whole-Brain Tender Analyser")
-    st.markdown("Upload a tender/RFP and get **10 questions per HBDI quadrant**.")
-    
+    st.markdown("Upload a tender/RFP and get **10 questions per HBDI quadrant**.")   
 # ====================== MODEL SELECTOR ======================
 model_options = {
     "Gemini 2.5 Flash (Google - FREE to start)": "gemini",
