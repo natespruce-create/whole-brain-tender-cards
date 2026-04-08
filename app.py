@@ -55,7 +55,7 @@ def create_whole_brain_pdf(questions):
         def header(self):
             # Add logo on every page
             if hasattr(self, 'logo_path') and self.logo_path:
-                self.image(self.logo_path, x=10, y=-1, w=45)  # ← Adjust size/position here
+                self.image(self.logo_path, x=10, y=0, w=45)  # ← Adjust size/position here
             
             # Title centered
             self.set_font("Helvetica", "B", 16)
