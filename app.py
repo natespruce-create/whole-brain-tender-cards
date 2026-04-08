@@ -7,9 +7,16 @@ from datetime import datetime
 
 st.set_page_config(page_title="Whole-Brain Tender Questions", page_icon="🧠", layout="wide")
 
-st.title("🧠 Whole-Brain Tender Analyser")
-st.markdown("Instructions: Upload a tender/RFP - click the big red button.")
+# ====================== LOGO ======================
+col1, col2 = st.columns([1, 4])
 
+with col1:
+    st.image("VS logo2.png", width=180)   # Change width as needed
+
+with col2:
+    st.title("🧠 Whole-Brain Tender Analyser")
+    st.markdown("Upload a tender/RFP and get **10 questions per HBDI quadrant**.")
+    
 # ====================== MODEL SELECTOR ======================
 model_options = {
     "Gemini 2.5 Flash (Google - FREE to start)": "gemini",
