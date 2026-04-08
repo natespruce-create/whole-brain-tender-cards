@@ -116,7 +116,7 @@ if uploaded_file:
 
     st.success(f"✅ Extracted ~{len(tender_text):,} characters")
 
-    if st.button("Generate 40 Whole-Brain Questions", type="primary", use_container_width=True):
+    if st.button("Generate my Whole-Brain Tender check list", type="primary", use_container_width=True):
         if not api_key:
             st.error("Missing API key for the selected model. Please check Streamlit secrets.")
             st.stop()
@@ -191,7 +191,7 @@ Quadrants:
 # ====================== PDF DOWNLOAD ======================
 if "questions" in st.session_state:
     st.markdown("---")
-    if st.button("📄 Download Pretty PDF (One Quadrant Per Page)", type="primary", use_container_width=True):
+    if st.button("📄 Download PDF", type="primary", use_container_width=True):
         with st.spinner("Creating beautiful PDF..."):
             try:
                 pdf_bytes = create_whole_brain_pdf(st.session_state.questions)
@@ -205,4 +205,4 @@ if "questions" in st.session_state:
             except Exception as pdf_error:
                 st.error(f"PDF creation failed: {str(pdf_error)}")
 
-st.caption("Whole-Brain Tender Tool • One quadrant per page in PDF")
+st.caption("Whole-Brain Tender Tool • Value Shift")
