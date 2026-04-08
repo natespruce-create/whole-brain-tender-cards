@@ -11,7 +11,7 @@ st.set_page_config(page_title="Whole-Brain Tender Questions", page_icon="🧠", 
 col1, col2 = st.columns([1, 4])
 
 with col1:
-    st.image("VS logo2.png", width=180)   # Change width as needed
+    st.image("VS logo 2.png", width=180)   # Change width as needed
 
 with col2:
     st.title("🧠 Whole-Brain Tender Analyser")
