@@ -14,7 +14,7 @@ with col1:
     st.image("VS logo 2.png", width=180)   # Change width as needed
 
 with col2:
-    st.title("🧠 Whole-Brain Tender Analyser")
+    st.title("Whole-Brain Tender Analyser")
     st.markdown("Upload a tender/RFP and get **10 questions per HBDI quadrant**.")   
 # ====================== MODEL SELECTOR ======================
 model_options = {
